@@ -19,7 +19,6 @@ export function ModalViewImage({
   onClose,
   imgUrl,
 }: ModalViewImageProps): JSX.Element | null {
-  // TODO MODAL WITH IMAGE AND EXTERNAL LINK
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} size="4xl" autoFocus={false}>
