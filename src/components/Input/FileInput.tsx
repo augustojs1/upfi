@@ -76,7 +76,12 @@ const FileInputBase: ForwardRefRenderFunction<
 
       setImageUrl('');
       setLocalImageUrl('');
-      setError('image', null);
+      setError('image', {
+        types: {
+          lessThan10MB: 'O arquivo deve ser menor que 10MB',
+          acceptedFormats: 'Somente são aceitos arquivos PNG, JPEG e GIF',
+        },
+      });
       setIsSending(true);
 
       await onChange(event);
