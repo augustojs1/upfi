@@ -2,6 +2,7 @@ import { Button, Box } from '@chakra-ui/react';
 import { useEffect, useMemo } from 'react';
 import { useInfiniteQuery } from 'react-query';
 
+import { AxiosResponse } from 'axios';
 import { Header } from '../components/Header';
 import { CardList } from '../components/CardList';
 import { api } from '../services/api';
@@ -9,62 +10,43 @@ import { Loading } from '../components/Loading';
 import { Error } from '../components/Error';
 
 export default function Home(): JSX.Element {
-  // const {
-  //   data,
-  //   isLoading,
-  //   isError,
-  //   isFetchingNextPage,
-  //   fetchNextPage,
-  //   hasNextPage,
-  // } = useInfiniteQuery(
-  //   'images',
-  //   // TODO AXIOS REQUEST WITH PARAM
-  //   ,
-  //   // TODO GET AND RETURN NEXT PAGE PARAM
-  // );
+  const fetchImages = async ({ pageParam = null }): Promise<any> => {
+    const response = await api.get('api/images', {
+      params: {
+        after: pageParam,
+      },
+    });
 
-  // const formattedData = useMemo(() => {
-  //   // TODO FORMAT AND FLAT DATA ARRAY
-  // }, [data]);
+    return response.data;
+  };
+
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery('images', fetchImages, {
+    getNextPageParam: (lastPage, pages) => {
+      if (pages[0].after) {
+        return pages[0].after;
+      }
+      return null;
+    },
+  });
+
+  const formattedData = useMemo(() => {
+    if (data) {
+      return data.pages[0].data;
+    }
+  }, [data]);
+
+  console.log('formattedData', formattedData);
 
   // TODO RENDER LOADING SCREEN
 
   // TODO RENDER ERROR SCREEN
-
-  // mock button logic
-  const hasNextPage = true;
-
-  // mock data (delete after use)
-  const formattedData = [
-    {
-      title: 'Doggy',
-      description: 'The best doggy',
-      url: './dog.png',
-      ts: 3,
-      id: '1276534',
-    },
-    {
-      title: 'Doggy',
-      description: 'The best doggy',
-      url: './dog.png',
-      ts: 3,
-      id: '1245634',
-    },
-    {
-      title: 'Doggy',
-      description: 'The best doggy',
-      url: './dog.png',
-      ts: 3,
-      id: '1214334',
-    },
-    {
-      title: 'Doggy',
-      description: 'The best doggy',
-      url: './dog.png',
-      ts: 3,
-      id: '12134',
-    },
-  ];
 
   return (
     <>
