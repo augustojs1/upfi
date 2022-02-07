@@ -45,7 +45,7 @@ export function ModalViewImage({
             justifyContent="start"
             h="32px"
           >
-            <Link href="http://localhost:3000/dog.png" onClick={onClose}>
+            <Link href={imgUrl} onClick={onClose}>
               Abrir Original
             </Link>
           </ModalFooter>

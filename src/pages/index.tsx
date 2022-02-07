@@ -1,8 +1,8 @@
+/* eslint-disable no-param-reassign */
 import { Button, Box } from '@chakra-ui/react';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useInfiniteQuery } from 'react-query';
 
-import { AxiosResponse } from 'axios';
 import { Header } from '../components/Header';
 import { CardList } from '../components/CardList';
 import { api } from '../services/api';
@@ -10,16 +10,6 @@ import { Loading } from '../components/Loading';
 import { Error } from '../components/Error';
 
 export default function Home(): JSX.Element {
-  const fetchImages = async ({ pageParam = null }): Promise<any> => {
-    const response = await api.get('api/images', {
-      params: {
-        after: pageParam,
-      },
-    });
-
-    return response.data;
-  };
-
   const {
     data,
     isLoading,
@@ -27,38 +17,70 @@ export default function Home(): JSX.Element {
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteQuery('images', fetchImages, {
-    getNextPageParam: (lastPage, pages) => {
-      if (pages[0].after) {
-        return pages[0].after;
-      }
-      return null;
+  } = useInfiniteQuery(
+    'images',
+    async ({ pageParam = null }) => {
+      const response = await api.get(`/api/images`, {
+        params: {
+          after: pageParam,
+        },
+      });
+
+      return response.data;
     },
-  });
+    {
+      getNextPageParam: lastPage => {
+        return lastPage.after;
+      },
+    }
+  );
 
   const formattedData = useMemo(() => {
-    if (data) {
-      return data.pages[0].data;
-    }
+    return data?.pages.reduce((acc, page) => {
+      acc = acc?.concat(page.data);
+      return acc;
+    }, []);
   }, [data]);
 
-  console.log('formattedData', formattedData);
+  if (isLoading) {
+    return (
+      <>
+        <Loading />;
+      </>
+    );
+  }
 
-  // TODO RENDER LOADING SCREEN
-
-  // TODO RENDER ERROR SCREEN
+  if (isError) {
+    return (
+      <>
+        <Error />
+      </>
+    );
+  }
 
   return (
     <>
       <Header />
 
-      <Box maxW={1120} px={20} mx="auto" my={20}>
+      <Box
+        maxW={1120}
+        px={20}
+        mx="auto"
+        my={20}
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+      >
         <CardList cards={formattedData} />
-        {hasNextPage ? (
-          <Button backgroundColor="orange.500" color="pGray.50" mt="2.5rem">
-            Carregar Mais
+        {hasNextPage && (
+          <Button
+            onClick={() => fetchNextPage()}
+            width="10rem"
+            marginTop="2rem"
+          >
+            {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
           </Button>
-        ) : null}
+        )}
       </Box>
     </>
   );
